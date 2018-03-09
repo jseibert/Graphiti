@@ -1,5 +1,6 @@
 import GraphQL
 import Runtime
+import Async
 
 public final class SchemaBuilder<Root, Context> {
     var graphQLTypeMap: [AnyType: GraphQLType] = [
@@ -508,7 +509,7 @@ public struct Schema<Root, Context> {
         request: String,
         variables: [String: Map] = [:],
         operationName: String? = nil
-    ) throws -> Map {
+    ) throws -> Future<Map> {
         guard Root.self is Void.Type else {
             throw GraphQLError(
                 message: "Root value is required."
@@ -534,7 +535,7 @@ public struct Schema<Root, Context> {
         rootValue: Root,
         variables: [String: Map] = [:],
         operationName: String? = nil
-    ) throws -> Map {
+    ) throws -> Future<Map> {
         guard Context.self is Void.Type else {
             throw GraphQLError(
                 message: "Context value is required."
@@ -555,7 +556,7 @@ public struct Schema<Root, Context> {
         context: Context,
         variables: [String: Map] = [:],
         operationName: String? = nil
-    ) throws -> Map {
+    ) throws -> Future<Map> {
         guard Root.self is Void.Type else {
             throw GraphQLError(
                 message: "Root value is required."
@@ -577,7 +578,7 @@ public struct Schema<Root, Context> {
         context: Context,
         variables: [String: Map] = [:],
         operationName: String? = nil
-    ) throws -> Map {
+    ) throws -> Future<Map> {
         return try graphql(
             schema: schema,
             request: request,
