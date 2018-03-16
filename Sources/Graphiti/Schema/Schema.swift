@@ -505,55 +505,10 @@ public struct Schema<Root, Context> {
             directives: builder.directives
         )
     }
-    public func execute(
-        request: String,
-        variables: [String: Map] = [:],
-        operationName: String? = nil
-    ) throws -> Future<Map> {
-        guard Root.self is Void.Type else {
-            throw GraphQLError(
-                message: "Root value is required."
-            )
-        }
-
-        guard Context.self is Void.Type else {
-            throw GraphQLError(
-                message: "Context value is required."
-            )
-        }
-
-        return try graphql(
-            schema: schema,
-            request: request,
-            variableValues: variables,
-            operationName: operationName
-        )
-    }
 
     public func execute(
         request: String,
-        rootValue: Root,
-        variables: [String: Map] = [:],
-        operationName: String? = nil
-    ) throws -> Future<Map> {
-        guard Context.self is Void.Type else {
-            throw GraphQLError(
-                message: "Context value is required."
-            )
-        }
-
-        return try graphql(
-            schema: schema,
-            request: request,
-            rootValue: rootValue,
-            variableValues: variables,
-            operationName: operationName
-        )
-    }
-
-    public func execute(
-        request: String,
-        context: Context,
+        worker: Worker,
         variables: [String: Map] = [:],
         operationName: String? = nil
     ) throws -> Future<Map> {
@@ -566,7 +521,7 @@ public struct Schema<Root, Context> {
         return try graphql(
             schema: schema,
             request: request,
-            contextValue: context,
+            worker: worker,
             variableValues: variables,
             operationName: operationName
         )
@@ -575,7 +530,7 @@ public struct Schema<Root, Context> {
     public func execute(
         request: String,
         rootValue: Root,
-        context: Context,
+        worker: Worker,
         variables: [String: Map] = [:],
         operationName: String? = nil
     ) throws -> Future<Map> {
@@ -583,7 +538,7 @@ public struct Schema<Root, Context> {
             schema: schema,
             request: request,
             rootValue: rootValue,
-            contextValue: context,
+            worker: worker,
             variableValues: variables,
             operationName: operationName
         )

@@ -255,7 +255,7 @@ public class FieldBuilder<Root, Context, Type> {
         futureType: O.Type = O.self,
         description: String? = nil,
         deprecationReason: String? = nil,
-        resolve: ResolveField<Type, A, Context, Future<O>>? = nil
+        resolve: ResolveField<Type, A, Worker, Future<O>>? = nil
     ) throws {
         let arguments = try schema.arguments(type: A.self, field: name)
 
@@ -265,18 +265,14 @@ public class FieldBuilder<Root, Context, Type> {
             deprecationReason: deprecationReason,
             args: arguments,
             resolve: resolve.map { resolve in
-                return { source, args, context, info in
+                return { source, args, worker, info in
                     guard let s = source as? Type else {
                         throw GraphQLError(message: "Expected type \(Type.self) but got \(Swift.type(of: source))")
                     }
 
                     let a = try A(map: args)
 
-                    guard let c = context as? Context else {
-                        throw GraphQLError(message: "Expected context type \(Context.self) but got \(Swift.type(of: context))")
-                    }
-
-                    return try resolve(s, a, c, info).map(to: Any?.self, { (value) -> Any? in
+                    return try resolve(s, a, worker, info).map(to: Any?.self, { (value) -> Any? in
                         return value
                     })
                 }
@@ -291,7 +287,7 @@ public class FieldBuilder<Root, Context, Type> {
         type: O.Type = O.self,
         description: String? = nil,
         deprecationReason: String? = nil,
-        resolve: ResolveField<Type, A, Context, O>? = nil
+        resolve: ResolveField<Type, A, Worker, O>? = nil
         ) throws {
         let arguments = try schema.arguments(type: A.self, field: name)
         
@@ -301,18 +297,14 @@ public class FieldBuilder<Root, Context, Type> {
             deprecationReason: deprecationReason,
             args: arguments,
             resolve: resolve.map { resolve in
-                return { source, args, context, info in
+                return { source, args, worker, info in
                     guard let s = source as? Type else {
                         throw GraphQLError(message: "Expected type \(Type.self) but got \(Swift.type(of: source))")
                     }
                     
                     let a = try A(map: args)
                     
-                    guard let c = context as? Context else {
-                        throw GraphQLError(message: "Expected context type \(Context.self) but got \(Swift.type(of: context))")
-                    }
-                    
-                    return try Future<Any?>(resolve(s, a, c, info))
+                    return Future.map(on: worker) { try resolve(s, a, worker, info) }
                 }
             }
         )
