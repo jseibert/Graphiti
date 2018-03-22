@@ -250,12 +250,12 @@ public class FieldBuilder<Root, Context, Type> {
 //        fields[name] = field
 //    }
 
-    public func field<A : Arguments, O>(
+    public func field<A : Arguments, W: Worker, O>(
         name: String,
         futureType: O.Type = O.self,
         description: String? = nil,
         deprecationReason: String? = nil,
-        resolve: ResolveField<Type, A, Worker, Future<O>>? = nil
+        resolve: ResolveField<Type, A, W, Future<O>>? = nil
     ) throws {
         let arguments = try schema.arguments(type: A.self, field: name)
 
@@ -269,10 +269,14 @@ public class FieldBuilder<Root, Context, Type> {
                     guard let s = source as? Type else {
                         throw GraphQLError(message: "Expected type \(Type.self) but got \(Swift.type(of: source))")
                     }
+                    
+                    guard let w = worker as? W else {
+                        throw GraphQLError(message: "Expected worker type \(W.self) but got \(Swift.type(of: worker))")
+                    }
 
                     let a = try A(map: args)
 
-                    return try resolve(s, a, worker, info).map(to: Any?.self, { (value) -> Any? in
+                    return try resolve(s, a, w, info).map(to: Any?.self, { (value) -> Any? in
                         return value
                     })
                 }
@@ -282,12 +286,12 @@ public class FieldBuilder<Root, Context, Type> {
         fields[name] = field
     }
     
-    public func field<A : Arguments, O>(
+    public func field<A : Arguments, W: Worker, O>(
         name: String,
         type: O.Type = O.self,
         description: String? = nil,
         deprecationReason: String? = nil,
-        resolve: ResolveField<Type, A, Worker, O>? = nil
+        resolve: ResolveField<Type, A, W, O>? = nil
         ) throws {
         let arguments = try schema.arguments(type: A.self, field: name)
         
@@ -302,9 +306,13 @@ public class FieldBuilder<Root, Context, Type> {
                         throw GraphQLError(message: "Expected type \(Type.self) but got \(Swift.type(of: source))")
                     }
                     
+                    guard let w = worker as? W else {
+                        throw GraphQLError(message: "Expected worker type \(W.self) but got \(Swift.type(of: worker))")
+                    }
+                    
                     let a = try A(map: args)
                     
-                    return Future.map(on: worker) { try resolve(s, a, worker, info) }
+                    return Future.map(on: w) { try resolve(s, a, w, info) }
                 }
             }
         )
