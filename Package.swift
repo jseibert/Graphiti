@@ -9,7 +9,7 @@ let package = Package(
     ],
 
     dependencies: [
-        .package(url: "https://github.com/jseibert/GraphQL.git", .branch("async-nio")),
+        .package(url: "https://github.com/jseibert/GraphQL.git", .branch("nio")),
     ],
 
     targets: [
